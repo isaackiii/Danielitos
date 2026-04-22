@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import Tasks from './pages/Tasks'
 import Shopping from './pages/Shopping'
 import Finance from './pages/Finance'
+import Debts from './pages/Debts'
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/tareas" element={<Tasks />} />
             <Route path="/compras" element={<Shopping />} />
             <Route path="/finanzas" element={<Finance />} />
+            <Route path="/deudas" element={<Debts />} />
           </Route>
         </Routes>
       </AuthProvider>

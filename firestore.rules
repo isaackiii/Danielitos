@@ -38,6 +38,11 @@ service cloud.firestore {
       match /expenses/{expenseId} {
         allow read, write: if isHouseholdMember(householdId);
       }
+
+      // Deudas — only household members
+      match /deudas/{deudaId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
     }
   }
 }

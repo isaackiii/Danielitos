@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { ClipboardList, ShoppingCart, Wallet, ChevronRight, Copy, Check } from 'lucide-react'
+import { ClipboardList, ShoppingCart, Wallet, Receipt, ChevronRight, Copy, Check } from 'lucide-react'
 
 export default function Home() {
   const { user, householdId } = useAuth()
@@ -66,6 +66,7 @@ export default function Home() {
           { to: '/tareas', icon: ClipboardList, label: 'Tareas', desc: 'Gestiona las tareas del hogar', iconClass: 'text-violet-600 bg-violet-50' },
           { to: '/compras', icon: ShoppingCart, label: 'Compras', desc: 'Listas de compras compartidas', iconClass: 'text-amber-500 bg-amber-50' },
           { to: '/finanzas', icon: Wallet, label: 'Finanzas', desc: 'Gastos y balance familiar', iconClass: 'text-green-600 bg-green-50' },
+          { to: '/deudas', icon: Receipt, label: 'Deudas', desc: 'Préstamos y abonos pendientes', iconClass: 'text-orange-500 bg-orange-50' },
         ].map(({ to, icon: Icon, label, desc, iconClass }) => (
           <Link
             key={to}
