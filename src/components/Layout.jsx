@@ -1,5 +1,6 @@
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, ShoppingCart, Wallet, LogOut, Receipt } from 'lucide-react'
+import { Home, ClipboardList, ShoppingCart, Wallet, LogOut } from 'lucide-react'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
@@ -9,12 +10,22 @@ const navItems = [
   { to: '/tareas', icon: ClipboardList, label: 'Tareas' },
   { to: '/compras', icon: ShoppingCart, label: 'Compras' },
   { to: '/finanzas', icon: Wallet, label: 'Finanzas' },
-  { to: '/deudas', icon: Receipt, label: 'Deudas' },
 ]
 
 export default function Layout() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onClick = e => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [menuOpen])
 
   const handleSignOut = async () => {
     await signOut(auth)
@@ -62,8 +73,43 @@ export default function Layout() {
         </div>
       </aside>
 
+      {/* Header mobile */}
+      <header className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-20 flex items-center justify-between px-4 h-14">
+        <span className="text-base font-bold text-violet-600">Nuestro Hogar</span>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="flex items-center gap-2 rounded-full hover:bg-gray-100 p-1 transition-colors"
+            aria-label="Menú de usuario"
+          >
+            {user?.photoURL ? (
+              <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-sm font-semibold">
+                {user?.displayName?.[0]?.toUpperCase() ?? '?'}
+              </div>
+            )}
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <div className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</div>
+                <div className="text-xs text-gray-400 truncate">{user?.email}</div>
+              </div>
+              <button
+                onClick={() => { setMenuOpen(false); handleSignOut() }}
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 w-full transition-colors"
+              >
+                <LogOut size={16} />
+                Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Main content */}
-      <main className="flex-1 md:ml-56 pb-20 md:pb-0">
+      <main className="flex-1 md:ml-56 pt-14 md:pt-0 pb-20 md:pb-0">
         <Outlet />
       </main>
 

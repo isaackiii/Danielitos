@@ -5,10 +5,26 @@ import { auth, db } from '../lib/firebase'
 
 const AuthContext = createContext(null)
 
+const BYPASS_AUTH = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true'
+
+const mockAuthState = {
+  loading: false,
+  user: {
+    uid: import.meta.env.VITE_DEV_UID || 'dev-user',
+    displayName: import.meta.env.VITE_DEV_NAME || 'Dev User',
+    email: 'dev@local',
+    photoURL: null,
+  },
+  householdId: import.meta.env.VITE_DEV_HOUSEHOLD_ID || 'dev-household',
+}
+
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({ loading: true, user: null, householdId: null })
+  const [state, setState] = useState(
+    BYPASS_AUTH ? mockAuthState : { loading: true, user: null, householdId: null }
+  )
 
   useEffect(() => {
+    if (BYPASS_AUTH) return
     let unsubUser = () => {}
 
     const unsubAuth = onAuthStateChanged(auth, user => {

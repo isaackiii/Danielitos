@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, deleteDoc, doc, serverTimestamp, updateDoc,
-} from 'firebase/firestore'
+} from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Plus, Trash2, Receipt, ChevronDown, ChevronUp, CheckCircle2, Circle, CreditCard } from 'lucide-react'
@@ -141,9 +141,8 @@ export default function Debts() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between pt-4 mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Deudas</h2>
+    <div>
+      <div className="flex items-center justify-end mb-4">
         <button
           onClick={() => { setShowForm(v => !v); setExpanded(null) }}
           className="bg-orange-500 text-white rounded-full p-2 hover:bg-orange-600 transition-colors"

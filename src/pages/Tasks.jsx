@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, serverTimestamp,
-} from 'firebase/firestore'
+} from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Plus, Check, Trash2 } from 'lucide-react'

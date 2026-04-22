@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import Layout from './components/Layout'
@@ -8,7 +8,6 @@ import Home from './pages/Home'
 import Tasks from './pages/Tasks'
 import Shopping from './pages/Shopping'
 import Finance from './pages/Finance'
-import Debts from './pages/Debts'
 
 export default function App() {
   return (
@@ -28,7 +27,7 @@ export default function App() {
             <Route path="/tareas" element={<Tasks />} />
             <Route path="/compras" element={<Shopping />} />
             <Route path="/finanzas" element={<Finance />} />
-            <Route path="/deudas" element={<Debts />} />
+            <Route path="/deudas" element={<Navigate to="/finanzas?tab=deudas" replace />} />
           </Route>
         </Routes>
       </AuthProvider>

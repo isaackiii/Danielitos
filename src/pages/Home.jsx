@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { collection, query, where, onSnapshot } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { ClipboardList, ShoppingCart, Wallet, Receipt, ChevronRight, Copy, Check } from 'lucide-react'
