@@ -1,0 +1,17 @@
+{
+  "name": "Nuestro Hogar",
+  "short_name": "Hogar",
+  "description": "Organiza tu hogar junto a tu familia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f3ff",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
