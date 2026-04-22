@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isHouseholdMember(householdId) {
+      return isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+    }
+
+    // Users can only read/write their own profile
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Households
+    match /households/{householdId} {
+      // Any signed-in user can read (needed to join by code) or create a household
+      allow read, create: if isSignedIn();
+      // Only members can update (e.g. adding a new member)
+      allow update: if isHouseholdMember(householdId);
+      allow delete: if false;
+
+      // Tasks — only household members
+      match /tasks/{taskId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+
+      // Shopping lists — only household members
+      match /shoppingLists/{listId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+
+      // Expenses — only household members
+      match /expenses/{expenseId} {
+        allow read, write: if isHouseholdMember(householdId);
+      }
+    }
+  }
+}
