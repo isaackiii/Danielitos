@@ -5,8 +5,10 @@ import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import { Home, Users } from 'lucide-react'
 
+const SAFE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+
 function generateCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
+  return Array.from({ length: 6 }, () => SAFE_CHARS[Math.floor(Math.random() * SAFE_CHARS.length)]).join('')
 }
 
 export default function Setup() {
