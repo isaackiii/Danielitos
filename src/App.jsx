@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import Tasks from './pages/Tasks'
 import Shopping from './pages/Shopping'
 import Finance from './pages/Finance'
+import Fridge from './pages/Fridge'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/compras" element={<Shopping />} />
             <Route path="/finanzas" element={<Finance />} />
             <Route path="/deudas" element={<Navigate to="/finanzas?tab=deudas" replace />} />
+            <Route path="/refri" element={<Fridge />} />
           </Route>
         </Routes>
       </AuthProvider>

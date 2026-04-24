@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, ShoppingCart, Wallet, LogOut } from 'lucide-react'
+import { Home, ClipboardList, ShoppingCart, Wallet, Refrigerator, LogOut } from 'lucide-react'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/tareas', icon: ClipboardList, label: 'Tareas' },
   { to: '/compras', icon: ShoppingCart, label: 'Compras' },
   { to: '/finanzas', icon: Wallet, label: 'Finanzas' },
+  { to: '/refri', icon: Refrigerator, label: 'Refri' },
 ]
 
 export default function Layout() {

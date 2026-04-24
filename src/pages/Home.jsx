@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import { collection, query, where, onSnapshot } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { ClipboardList, ShoppingCart, Wallet, Receipt, ChevronRight, Copy, Check } from 'lucide-react'
+import { ClipboardList, ShoppingCart, Wallet, Receipt, Refrigerator, ChevronRight, Copy, Check, AlertTriangle } from 'lucide-react'
 
 export default function Home() {
   const { user, householdId } = useAuth()
   const [pendingTasks, setPendingTasks] = useState(0)
   const [shoppingItems, setShoppingItems] = useState(0)
+  const [fridgeUrgent, setFridgeUrgent] = useState(0)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -30,7 +31,21 @@ export default function Home() {
       }
     )
 
-    return () => { unsubTasks(); unsubShopping() }
+    const unsubFridge = onSnapshot(
+      collection(db, 'households', householdId, 'fridge'),
+      snap => {
+        const today = new Date(); today.setHours(0, 0, 0, 0)
+        const urgent = snap.docs.filter(d => {
+          const exp = d.data().expiresAt
+          if (!exp) return false
+          const diff = Math.round((new Date(exp + 'T00:00:00') - today) / 86400000)
+          return diff <= 6
+        }).length
+        setFridgeUrgent(urgent)
+      }
+    )
+
+    return () => { unsubTasks(); unsubShopping(); unsubFridge() }
   }, [householdId])
 
   const hour = new Date().getHours()
@@ -65,9 +80,10 @@ export default function Home() {
         {[
           { to: '/tareas', icon: ClipboardList, label: 'Tareas', desc: 'Gestiona las tareas del hogar', iconClass: 'text-violet-600 bg-violet-50' },
           { to: '/compras', icon: ShoppingCart, label: 'Compras', desc: 'Listas de compras compartidas', iconClass: 'text-amber-500 bg-amber-50' },
+          { to: '/refri', icon: Refrigerator, label: 'La refri', desc: 'Inventario y fechas de vencimiento', iconClass: 'text-cyan-500 bg-cyan-50', badge: fridgeUrgent },
           { to: '/finanzas', icon: Wallet, label: 'Finanzas', desc: 'Gastos y balance familiar', iconClass: 'text-green-600 bg-green-50' },
           { to: '/deudas', icon: Receipt, label: 'Deudas', desc: 'Préstamos y abonos pendientes', iconClass: 'text-orange-500 bg-orange-50' },
-        ].map(({ to, icon: Icon, label, desc, iconClass }) => (
+        ].map(({ to, icon: Icon, label, desc, iconClass, badge }) => (
           <Link
             key={to}
             to={to}
@@ -80,6 +96,12 @@ export default function Home() {
               <div className="font-medium text-gray-900 text-sm">{label}</div>
               <div className="text-xs text-gray-400">{desc}</div>
             </div>
+            {badge > 0 && (
+              <span className="flex items-center gap-1 text-xs font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
+                <AlertTriangle size={11} />
+                {badge}
+              </span>
+            )}
             <ChevronRight size={16} className="text-gray-300" />
           </Link>
         ))}
