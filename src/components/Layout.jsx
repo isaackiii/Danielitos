@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, ShoppingCart, Wallet, Refrigerator, LogOut } from 'lucide-react'
+import { Home, ClipboardList, ShoppingCart, Wallet, Refrigerator, LogOut, Download } from 'lucide-react'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
+import InstallPrompt from './InstallPrompt'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Inicio', exact: true },
@@ -17,7 +18,15 @@ export default function Layout() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [showInstall, setShowInstall] = useState(false)
   const menuRef = useRef(null)
+  const [canInstall, setCanInstall] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setCanInstall(true)
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -35,6 +44,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
+      {showInstall && <InstallPrompt manualTrigger={showInstall} onClose={() => setShowInstall(false)} />}
       {/* Sidebar desktop */}
       <aside className="hidden md:flex flex-col w-56 bg-white border-r border-gray-200 fixed h-full z-10">
         <div className="p-5 border-b border-gray-100">
@@ -97,6 +107,15 @@ export default function Layout() {
                 <div className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</div>
                 <div className="text-xs text-gray-400 truncate">{user?.email}</div>
               </div>
+              {canInstall && (
+                <button
+                  onClick={() => { setMenuOpen(false); setShowInstall(true) }}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 w-full transition-colors border-b border-gray-100"
+                >
+                  <Download size={16} />
+                  Descargar app
+                </button>
+              )}
               <button
                 onClick={() => { setMenuOpen(false); handleSignOut() }}
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 w-full transition-colors"
