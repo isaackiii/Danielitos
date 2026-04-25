@@ -5,13 +5,26 @@ import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
 import InstallPrompt from './InstallPrompt'
+import { BURBUJAS, navColors, burbFontFamily } from '../lib/burbujasTheme'
+
+function useIsDesktop() {
+  const get = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+  const [isDesktop, setIsDesktop] = useState(get)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const onChange = e => setIsDesktop(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return isDesktop
+}
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Inicio', exact: true },
-  { to: '/tareas', icon: ClipboardList, label: 'Tareas' },
-  { to: '/compras', icon: ShoppingCart, label: 'Compras' },
-  { to: '/finanzas', icon: Wallet, label: 'Finanzas' },
-  { to: '/refri', icon: Refrigerator, label: 'Refri' },
+  { id: 'home', to: '/', icon: Home, label: 'Inicio', exact: true, emoji: '🏡', color: navColors.home },
+  { id: 'task', to: '/tareas', icon: ClipboardList, label: 'Tareas', emoji: '✅', color: navColors.task },
+  { id: 'shop', to: '/compras', icon: ShoppingCart, label: 'Compras', emoji: '🛍️', color: navColors.shop },
+  { id: 'fin', to: '/finanzas', icon: Wallet, label: 'Finanzas', emoji: '💸', color: navColors.fin },
+  { id: 'refri', to: '/refri', icon: Refrigerator, label: 'Refri', emoji: '🧊', color: navColors.refri },
 ]
 
 export default function Layout() {
@@ -21,6 +34,7 @@ export default function Layout() {
   const [showInstall, setShowInstall] = useState(false)
   const menuRef = useRef(null)
   const [canInstall, setCanInstall] = useState(false)
+  const isDesktop = useIsDesktop()
 
   useEffect(() => {
     const handler = () => setCanInstall(true)
@@ -46,71 +60,184 @@ export default function Layout() {
     <div className="flex min-h-screen bg-gray-50">
       {showInstall && <InstallPrompt manualTrigger={showInstall} onClose={() => setShowInstall(false)} />}
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex flex-col w-56 bg-white border-r border-gray-200 fixed h-full z-10">
-        <div className="p-5 border-b border-gray-100">
-          <span className="text-lg font-bold text-violet-600">Nuestro Hogar</span>
+      {isDesktop && (
+      <aside style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: 224,
+        background: BURBUJAS.cream,
+        borderRight: `2.5px solid ${BURBUJAS.dark}`,
+        position: 'fixed',
+        height: '100vh',
+        zIndex: 10,
+        fontFamily: burbFontFamily,
+      }}>
+        <div style={{
+          padding: 20,
+          borderBottom: `2.5px solid ${BURBUJAS.dark}`,
+        }}>
+          <span style={{
+            fontSize: 18,
+            fontWeight: 800,
+            color: BURBUJAS.purple,
+            fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+          }}>Nuestro Hogar</span>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map(({ to, icon: Icon, label, exact }) => (
+        <nav style={{ flex: 1, padding: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {navItems.map(({ to, icon: Icon, label, exact, color }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  isActive ? 'bg-violet-50 text-violet-600' : 'text-gray-600 hover:bg-gray-100'
-                }`
-              }
+              style={({ isActive }) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 12px',
+                borderRadius: 14,
+                fontSize: 14,
+                fontWeight: 600,
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+                color: isActive ? '#fff' : BURBUJAS.dark,
+                background: isActive ? color : 'transparent',
+                border: isActive ? `2px solid ${BURBUJAS.dark}` : '2px solid transparent',
+              })}
             >
               <Icon size={18} />
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-gray-100 space-y-1">
-          <div className="flex items-center gap-2 px-3 py-2">
+        <div style={{ padding: 12, borderTop: `2.5px solid ${BURBUJAS.dark}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px' }}>
             {user?.photoURL && (
-              <img src={user.photoURL} className="w-7 h-7 rounded-full" alt="" />
+              <img src={user.photoURL} style={{ width: 28, height: 28, borderRadius: '50%' }} alt="" />
             )}
-            <span className="text-xs text-gray-500 truncate">{user?.displayName}</span>
+            <span style={{ fontSize: 12, color: BURBUJAS.dark, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.displayName}</span>
           </div>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-100 w-full transition-colors"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 12px',
+              borderRadius: 14,
+              fontSize: 14,
+              color: BURBUJAS.dark,
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+            onMouseLeave={e => e.target.style.background = 'transparent'}
           >
             <LogOut size={16} />
             Cerrar sesión
           </button>
         </div>
       </aside>
+      )}
 
       {/* Header mobile */}
-      <header className="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-20 flex items-center justify-between px-4 h-14">
-        <span className="text-base font-bold text-violet-600">Nuestro Hogar</span>
-        <div className="relative" ref={menuRef}>
+      {!isDesktop && (
+      <header style={{
+        display: 'flex',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        background: BURBUJAS.cream,
+        borderBottom: `2.5px solid ${BURBUJAS.dark}`,
+        zIndex: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 16px',
+        height: 56,
+        fontFamily: burbFontFamily,
+      }}>
+        <span style={{ fontSize: 16, fontWeight: 800, color: BURBUJAS.purple }}>Nuestro Hogar</span>
+        <div style={{ position: 'relative' }} ref={menuRef}>
           <button
             onClick={() => setMenuOpen(v => !v)}
-            className="flex items-center gap-2 rounded-full hover:bg-gray-100 p-1 transition-colors"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              borderRadius: '50%',
+              padding: 4,
+              background: 'transparent',
+              border: `2px solid ${BURBUJAS.dark}`,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+            onMouseLeave={e => e.target.style.background = 'transparent'}
             aria-label="Menú de usuario"
           >
             {user?.photoURL ? (
-              <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="" />
+              <img src={user.photoURL} style={{ width: 32, height: 32, borderRadius: '50%' }} alt="" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-sm font-semibold">
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: BURBUJAS.purple,
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+                fontWeight: 700,
+              }}>
                 {user?.displayName?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="text-sm font-medium text-gray-900 truncate">{user?.displayName}</div>
-                <div className="text-xs text-gray-400 truncate">{user?.email}</div>
+            <div style={{
+              position: 'absolute',
+              right: 0,
+              top: '100%',
+              marginTop: 4,
+              width: 224,
+              background: BURBUJAS.cream,
+              borderRadius: 20,
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+              overflow: 'hidden',
+              zIndex: 30,
+            }}>
+              <div style={{ padding: '12px 16px', borderBottom: `2.5px solid ${BURBUJAS.dark}` }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: BURBUJAS.dark, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.displayName}</div>
+                <div style={{ fontSize: 12, color: BURBUJAS.dark, opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</div>
               </div>
               {canInstall && (
                 <button
                   onClick={() => { setMenuOpen(false); setShowInstall(true) }}
-                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 w-full transition-colors border-b border-gray-100"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 16px',
+                    fontSize: 14,
+                    color: BURBUJAS.dark,
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: `2.5px solid ${BURBUJAS.dark}`,
+                    width: '100%',
+                    cursor: 'pointer',
+                    fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                    fontWeight: 600,
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+                  onMouseLeave={e => e.target.style.background = 'transparent'}
                 >
                   <Download size={16} />
                   Descargar app
@@ -118,7 +245,23 @@ export default function Layout() {
               )}
               <button
                 onClick={() => { setMenuOpen(false); handleSignOut() }}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 w-full transition-colors"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 16px',
+                  fontSize: 14,
+                  color: BURBUJAS.dark,
+                  background: 'transparent',
+                  border: 'none',
+                  width: '100%',
+                  cursor: 'pointer',
+                  fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                  fontWeight: 600,
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+                onMouseLeave={e => e.target.style.background = 'transparent'}
               >
                 <LogOut size={16} />
                 Cerrar sesión
@@ -127,32 +270,69 @@ export default function Layout() {
           )}
         </div>
       </header>
+      )}
 
       {/* Main content */}
-      <main className="flex-1 md:ml-56 pt-14 md:pt-0 pb-20 md:pb-0">
+      <main style={{
+        flex: 1,
+        minWidth: 0,
+        overflowX: 'hidden',
+        marginLeft: isDesktop ? 224 : 0,
+        paddingTop: isDesktop ? 0 : 56,
+        paddingBottom: isDesktop ? 0 : 90,
+        background: BURBUJAS.bg,
+        minHeight: '100vh',
+      }}>
         <Outlet />
       </main>
 
       {/* Bottom nav mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
-        <div className="flex">
-          {navItems.map(({ to, icon: Icon, label, exact }) => (
+      {!isDesktop && (
+      <nav style={{
+        display: 'block',
+        position: 'fixed',
+        bottom: 10,
+        left: 10,
+        right: 10,
+        background: BURBUJAS.cream,
+        border: `2.5px solid ${BURBUJAS.dark}`,
+        borderRadius: 20,
+        zIndex: 10,
+        boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+        padding: '0 6px',
+        fontFamily: burbFontFamily,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', height: 58 }}>
+          {navItems.map(({ id, to, icon: Icon, label, exact, color, emoji }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
-              className={({ isActive }) =>
-                `flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors ${
-                  isActive ? 'text-violet-600' : 'text-gray-400'
-                }`
-              }
+              style={({ isActive }) => ({
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                textDecoration: 'none',
+                fontSize: 11,
+                fontWeight: 700,
+                borderRadius: 14,
+                background: isActive ? color : 'transparent',
+                border: isActive ? `2px solid ${BURBUJAS.dark}` : '2px solid transparent',
+                color: isActive ? '#fff' : BURBUJAS.dark,
+                transition: 'all 0.2s',
+                transform: isActive ? 'translateY(-2px)' : 'none',
+              })}
             >
-              <Icon size={20} />
-              {label}
+              <div style={{ fontSize: 18 }}>{emoji}</div>
+              <div>{label}</div>
             </NavLink>
           ))}
         </div>
       </nav>
+      )}
     </div>
   )
 }

@@ -5,19 +5,20 @@ import {
 } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
+import { BURBUJAS, navColors } from '../lib/burbujasTheme'
 
 const CATEGORIES = ['Comida', 'Servicios', 'Transporte', 'Salud', 'Entretenimiento', 'Ropa', 'Hogar', 'Otro']
 
-const CAT_COLOR = {
-  Comida: 'bg-orange-100 text-orange-700',
-  Servicios: 'bg-blue-100 text-blue-700',
-  Transporte: 'bg-cyan-100 text-cyan-700',
-  Salud: 'bg-red-100 text-red-700',
-  Entretenimiento: 'bg-purple-100 text-purple-700',
-  Ropa: 'bg-pink-100 text-pink-700',
-  Hogar: 'bg-green-100 text-green-700',
-  Otro: 'bg-gray-100 text-gray-600',
+const CAT_EMOJI = {
+  Comida: '🍕',
+  Servicios: '💡',
+  Transporte: '🚗',
+  Salud: '🏥',
+  Entretenimiento: '🎬',
+  Ropa: '👕',
+  Hogar: '🏠',
+  Otro: '📦',
 }
 
 const fmt = n => `$${Number(n).toFixed(2)}`
@@ -71,50 +72,121 @@ export default function Expenses() {
     deleteDoc(doc(db, 'households', householdId, 'expenses', id))
 
   return (
-    <div>
-      <div className="flex items-center justify-end mb-4">
+    <div style={{
+      fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 16 }}>
         <button
           onClick={() => setShowForm(v => !v)}
-          className="bg-green-600 text-white rounded-full p-2 hover:bg-green-700 transition-colors"
+          style={{
+            background: navColors.fin,
+            color: '#fff',
+            borderRadius: '50%',
+            padding: 8,
+            border: `2.5px solid ${BURBUJAS.dark}`,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={e => e.target.style.transform = 'scale(1.1)'}
+          onMouseLeave={e => e.target.style.transform = 'scale(1)'}
         >
           <Plus size={20} />
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-gray-50 rounded-2xl p-3 text-center border border-gray-100">
-          <div className="text-base font-bold text-gray-900">{fmt(totalYo + totalElla)}</div>
-          <div className="text-xs text-gray-400 mt-0.5">Total</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 16 }}>
+        <div style={{
+          background: BURBUJAS.yellow,
+          borderRadius: 20,
+          padding: 12,
+          textAlign: 'center',
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: BURBUJAS.dark }}>{fmt(totalYo + totalElla)}</div>
+          <div style={{ fontSize: 11, color: BURBUJAS.dark, opacity: 0.6, marginTop: 4, fontWeight: 600 }}>Total</div>
         </div>
-        <div className="bg-blue-50 rounded-2xl p-3 text-center border border-blue-100">
-          <div className="text-base font-bold text-blue-700">{fmt(totalYo)}</div>
-          <div className="text-xs text-gray-400 mt-0.5">Yo</div>
+        <div style={{
+          background: BURBUJAS.blue,
+          borderRadius: 20,
+          padding: 12,
+          textAlign: 'center',
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+          color: '#fff',
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 800 }}>{fmt(totalYo)}</div>
+          <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4, fontWeight: 600 }}>Yo pagué</div>
         </div>
-        <div className="bg-pink-50 rounded-2xl p-3 text-center border border-pink-100">
-          <div className="text-base font-bold text-pink-600">{fmt(totalElla)}</div>
-          <div className="text-xs text-gray-400 mt-0.5">Ella</div>
+        <div style={{
+          background: BURBUJAS.pink,
+          borderRadius: 20,
+          padding: 12,
+          textAlign: 'center',
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+          color: '#fff',
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 800 }}>{fmt(totalElla)}</div>
+          <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4, fontWeight: 600 }}>Ella pagó</div>
         </div>
       </div>
 
       {balance !== 0 && (
-        <div className={`rounded-2xl p-3.5 mb-4 flex items-center gap-2 text-sm font-medium ${
-          balance > 0 ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-pink-50 text-pink-600 border border-pink-100'
-        }`}>
-          {balance > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+        <div style={{
+          borderRadius: 20,
+          padding: 12,
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          fontSize: 14,
+          fontWeight: 700,
+          background: balance > 0 ? BURBUJAS.green : BURBUJAS.orange,
+          color: '#fff',
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+        }}>
+          {balance > 0 ? '📈' : '📉'}
           {balance > 0
-            ? `Ella te debe ${fmt(balance / 2)}`
+            ? `Ella te debe ${fmt(Math.abs(balance) / 2)}`
             : `Tú le debes ${fmt(Math.abs(balance) / 2)}`}
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 space-y-3">
+        <form onSubmit={handleAdd} style={{
+          background: '#fff',
+          borderRadius: 20,
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
           <input
             autoFocus
             value={desc}
             onChange={e => setDesc(e.target.value)}
             placeholder="Descripción (ej. Supermercado)"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            style={{
+              width: '100%',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+            }}
           />
           <input
             type="number"
@@ -123,41 +195,109 @@ export default function Expenses() {
             placeholder="Monto"
             min="0"
             step="0.01"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+            style={{
+              width: '100%',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+            }}
           />
           <select
             value={category}
             onChange={e => setCategory(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+            style={{
+              width: '100%',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+              background: '#fff',
+              color: BURBUJAS.dark,
+            }}
           >
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
-          <div className="flex gap-2">
-            {[['yo', 'Yo pagué', 'bg-blue-100 text-blue-700'], ['ella', 'Ella pagó', 'bg-pink-100 text-pink-600']].map(([val, label, active]) => (
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[['yo', '🐻 Yo pagué', BURBUJAS.blue], ['ella', '🦊 Ella pagó', BURBUJAS.pink]].map(([val, label, color]) => (
               <button
                 key={val}
                 type="button"
                 onClick={() => setPaidBy(val)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  paidBy === val ? active : 'bg-gray-100 text-gray-400'
-                }`}
+                style={{
+                  flex: 1,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  border: `2.5px solid ${BURBUJAS.dark}`,
+                  background: paidBy === val ? color : '#fff',
+                  color: paidBy === val ? '#fff' : BURBUJAS.dark,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                }}
+                onMouseEnter={e => {
+                  if (paidBy !== val) {
+                    e.target.style.background = color;
+                    e.target.style.color = '#fff';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (paidBy !== val) {
+                    e.target.style.background = '#fff';
+                    e.target.style.color = BURBUJAS.dark;
+                  }
+                }}
               >
                 {label}
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="flex-1 py-2 rounded-xl text-sm text-gray-500 border border-gray-200 hover:bg-gray-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                color: BURBUJAS.dark,
+                background: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+              onMouseLeave={e => e.target.style.background = '#fff'}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!desc.trim() || !amount || adding}
-              className="flex-1 py-2 rounded-xl text-sm bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                background: navColors.fin,
+                color: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: !desc.trim() || !amount || adding ? 'not-allowed' : 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                opacity: !desc.trim() || !amount || adding ? 0.5 : 1,
+              }}
             >
               Guardar
             </button>
@@ -166,27 +306,82 @@ export default function Expenses() {
       )}
 
       {expenses.length === 0 ? (
-        <div className="text-center py-16">
-          <Wallet size={40} className="text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-300 text-sm">Sin gastos registrados.</p>
+        <div style={{
+          textAlign: 'center',
+          paddingTop: 64,
+          paddingBottom: 64,
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💸</div>
+          <p style={{ color: BURBUJAS.dark, opacity: 0.4, fontSize: 14 }}>Sin gastos registrados.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {expenses.map(e => (
-            <div key={e.id} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 px-4 py-3">
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-gray-900 text-sm truncate">{e.description}</div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLOR[e.category] ?? CAT_COLOR.Otro}`}>
+            <div
+              key={e.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                background: '#fff',
+                borderRadius: 20,
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                padding: '12px 16px',
+                boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e_el => {
+                e_el.currentTarget.style.transform = 'translateY(-2px)';
+                e_el.currentTarget.style.boxShadow = `3px 5px 0 ${BURBUJAS.dark}`;
+              }}
+              onMouseLeave={e_el => {
+                e_el.currentTarget.style.transform = 'translateY(0)';
+                e_el.currentTarget.style.boxShadow = `3px 3px 0 ${BURBUJAS.dark}`;
+              }}
+            >
+              <div style={{
+                flex: 1,
+                minWidth: 0,
+              }}>
+                <div style={{ fontWeight: 600, color: BURBUJAS.dark, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {CAT_EMOJI[e.category] ?? '📦'} {e.description}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <span style={{
+                    fontSize: 11,
+                    padding: '4px 8px',
+                    borderRadius: 999,
+                    fontWeight: 800,
+                    background: BURBUJAS.cream,
+                    color: BURBUJAS.dark,
+                    border: `2px solid ${BURBUJAS.dark}`,
+                  }}>
                     {e.category}
                   </span>
-                  <span className={`text-xs ${e.paidBy === 'yo' ? 'text-blue-600' : 'text-pink-500'}`}>
-                    {e.paidBy === 'yo' ? 'Yo' : 'Ella'}
+                  <span style={{
+                    fontSize: 11,
+                    color: e.paidBy === 'yo' ? BURBUJAS.blue : BURBUJAS.pink,
+                    fontWeight: 700,
+                  }}>
+                    {e.paidBy === 'yo' ? '🐻' : '🦊'}
                   </span>
                 </div>
               </div>
-              <span className="font-semibold text-gray-900 text-sm">{fmt(e.amount)}</span>
-              <button onClick={() => handleDelete(e.id)} className="text-gray-200 hover:text-red-400 transition-colors">
+              <span style={{ fontWeight: 800, color: BURBUJAS.dark, fontSize: 14 }}>{fmt(e.amount)}</span>
+              <button
+                onClick={() => handleDelete(e.id)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: BURBUJAS.dark,
+                  cursor: 'pointer',
+                  padding: 4,
+                  opacity: 0.3,
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={e => e.target.style.opacity = 1}
+                onMouseLeave={e => e.target.style.opacity = 0.3}
+              >
                 <Trash2 size={16} />
               </button>
             </div>

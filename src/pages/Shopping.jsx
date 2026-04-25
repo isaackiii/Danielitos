@@ -5,7 +5,9 @@ import {
 } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Check, Trash2, ChevronLeft, ShoppingBasket } from 'lucide-react'
+import { Plus, Trash2, ChevronLeft, ShoppingBasket } from 'lucide-react'
+import { BURBUJAS, navColors } from '../lib/burbujasTheme'
+import BurbCheckbox from '../components/burbujas/BurbCheckbox'
 
 export default function Shopping() {
   const { householdId } = useAuth()
@@ -73,46 +75,144 @@ export default function Shopping() {
     const done = current.items?.filter(i => i.done) ?? []
 
     return (
-      <div className="p-4 max-w-2xl mx-auto">
-        <div className="flex items-center gap-3 pt-4 mb-4">
-          <button onClick={() => setActiveId(null)} className="text-gray-400 hover:text-gray-600">
-            <ChevronLeft size={24} />
+      <div style={{
+        padding: 16,
+        maxWidth: 896,
+        margin: '0 auto',
+        fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 16, marginBottom: 16 }}>
+          <button
+            onClick={() => setActiveId(null)}
+            style={{
+              background: 'transparent',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: 4,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+            onMouseLeave={e => e.target.style.background = 'transparent'}
+          >
+            <ChevronLeft size={20} color={BURBUJAS.dark} />
           </button>
-          <h2 className="text-xl font-bold text-gray-900 flex-1">{current.name}</h2>
-          <button onClick={() => deleteList(activeId)} className="text-gray-200 hover:text-red-400 transition-colors">
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: BURBUJAS.dark, flex: 1 }}>{current.name}</h2>
+          <button
+            onClick={() => deleteList(activeId)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: BURBUJAS.dark,
+              cursor: 'pointer',
+              padding: 4,
+              opacity: 0.3,
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={e => e.target.style.opacity = 1}
+            onMouseLeave={e => e.target.style.opacity = 0.3}
+          >
             <Trash2 size={18} />
           </button>
         </div>
 
-        <form onSubmit={addItem} className="flex gap-2 mb-4">
+        <form onSubmit={addItem} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <input
             value={newItem}
             onChange={e => setNewItem(e.target.value)}
             placeholder="Agregar ítem..."
-            className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            style={{
+              flex: 1,
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+            }}
           />
           <button
             type="submit"
             disabled={!newItem.trim()}
-            className="bg-amber-500 text-white rounded-xl px-4 hover:bg-amber-600 disabled:opacity-50 transition-colors"
+            style={{
+              background: navColors.shop,
+              color: '#fff',
+              borderRadius: 12,
+              padding: '8px 12px',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              cursor: !newItem.trim() ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: !newItem.trim() ? 0.5 : 1,
+              transition: 'transform 0.2s',
+              fontWeight: 700,
+            }}
+            onMouseEnter={e => !newItem.trim() || (e.target.style.transform = 'scale(1.05)')}
+            onMouseLeave={e => e.target.style.transform = 'scale(1)'}
           >
             <Plus size={18} />
           </button>
         </form>
 
         {pending.length === 0 && done.length === 0 && (
-          <p className="text-center py-12 text-gray-300 text-sm">Lista vacía. Agrega ítems arriba.</p>
+          <p style={{
+            textAlign: 'center',
+            paddingTop: 48,
+            paddingBottom: 48,
+            color: BURBUJAS.dark,
+            opacity: 0.4,
+            fontSize: 14,
+          }}>
+            Lista vacía. Agrega ítems arriba.
+          </p>
         )}
 
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {pending.map(item => (
-            <div key={item.id} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 px-4 py-3">
-              <button
-                onClick={() => toggleItem(item.id)}
-                className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-gray-300 hover:border-amber-400 transition-colors"
+            <div
+              key={item.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                background: '#fff',
+                borderRadius: 20,
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                padding: '12px 16px',
+                boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+              }}
+            >
+              <BurbCheckbox
+                checked={false}
+                color={navColors.shop}
+                onChange={() => toggleItem(item.id)}
               />
-              <span className="flex-1 text-sm text-gray-800">{item.name}</span>
-              <button onClick={() => deleteItem(item.id)} className="text-gray-200 hover:text-red-400 transition-colors">
+              <span style={{
+                flex: 1,
+                fontSize: 14,
+                color: BURBUJAS.dark,
+                fontWeight: 500,
+              }}>
+                {item.name}
+              </span>
+              <button
+                onClick={() => deleteItem(item.id)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: BURBUJAS.dark,
+                  cursor: 'pointer',
+                  padding: 4,
+                  opacity: 0.3,
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={e => e.target.style.opacity = 1}
+                onMouseLeave={e => e.target.style.opacity = 0.3}
+              >
                 <Trash2 size={16} />
               </button>
             </div>
@@ -120,17 +220,60 @@ export default function Shopping() {
 
           {done.length > 0 && (
             <>
-              <p className="text-xs text-gray-300 font-medium pt-3 pb-1 px-1">En el carrito</p>
+              <p style={{
+                fontSize: 12,
+                color: BURBUJAS.dark,
+                fontWeight: 800,
+                paddingTop: 12,
+                paddingBottom: 4,
+                paddingLeft: 4,
+                opacity: 0.6,
+              }}>
+                En el carrito
+              </p>
               {done.map(item => (
-                <div key={item.id} className="flex items-center gap-3 bg-gray-50 rounded-2xl border border-gray-100 px-4 py-3 opacity-60">
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    background: BURBUJAS.yellow,
+                    borderRadius: 20,
+                    border: `2.5px solid ${BURBUJAS.dark}`,
+                    padding: '12px 16px',
+                    boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+                    opacity: 0.7,
+                  }}
+                >
+                  <BurbCheckbox
+                    checked={true}
+                    color={navColors.shop}
+                    onChange={() => toggleItem(item.id)}
+                  />
+                  <span style={{
+                    flex: 1,
+                    fontSize: 14,
+                    color: BURBUJAS.dark,
+                    textDecoration: 'line-through',
+                    fontWeight: 400,
+                  }}>
+                    {item.name}
+                  </span>
                   <button
-                    onClick={() => toggleItem(item.id)}
-                    className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-amber-400 bg-amber-400 flex items-center justify-center text-white"
+                    onClick={() => deleteItem(item.id)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: BURBUJAS.dark,
+                      cursor: 'pointer',
+                      padding: 4,
+                      opacity: 0.3,
+                      transition: 'opacity 0.2s',
+                    }}
+                    onMouseEnter={e => e.target.style.opacity = 1}
+                    onMouseLeave={e => e.target.style.opacity = 0.3}
                   >
-                    <Check size={12} strokeWidth={3} />
-                  </button>
-                  <span className="flex-1 text-sm text-gray-400 line-through">{item.name}</span>
-                  <button onClick={() => deleteItem(item.id)} className="text-gray-200 hover:text-red-400 transition-colors">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -143,38 +286,104 @@ export default function Shopping() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between pt-4 mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Compras</h2>
+    <div style={{
+      padding: 16,
+      maxWidth: 896,
+      margin: '0 auto',
+      fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: BURBUJAS.dark }}>Compras</h2>
         <button
           onClick={() => setShowNewList(v => !v)}
-          className="bg-amber-500 text-white rounded-full p-2 hover:bg-amber-600 transition-colors"
+          style={{
+            background: navColors.shop,
+            color: '#fff',
+            borderRadius: '50%',
+            padding: 8,
+            border: `2.5px solid ${BURBUJAS.dark}`,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={e => e.target.style.transform = 'scale(1.1)'}
+          onMouseLeave={e => e.target.style.transform = 'scale(1)'}
         >
           <Plus size={20} />
         </button>
       </div>
 
       {showNewList && (
-        <form onSubmit={createList} className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 space-y-3">
+        <form onSubmit={createList} style={{
+          background: '#fff',
+          borderRadius: 20,
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
           <input
             autoFocus
             value={listName}
             onChange={e => setListName(e.target.value)}
             placeholder="Nombre de la lista (ej. Supermercado)"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            style={{
+              width: '100%',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+            }}
           />
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={() => setShowNewList(false)}
-              className="flex-1 py-2 rounded-xl text-sm text-gray-500 border border-gray-200 hover:bg-gray-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                color: BURBUJAS.dark,
+                background: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+              onMouseLeave={e => e.target.style.background = '#fff'}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!listName.trim()}
-              className="flex-1 py-2 rounded-xl text-sm bg-amber-500 text-white font-medium hover:bg-amber-600 disabled:opacity-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                background: navColors.shop,
+                color: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: !listName.trim() ? 'not-allowed' : 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                opacity: !listName.trim() ? 0.5 : 1,
+              }}
             >
               Crear
             </button>
@@ -183,12 +392,16 @@ export default function Shopping() {
       )}
 
       {lists.length === 0 ? (
-        <div className="text-center py-16">
-          <ShoppingBasket size={40} className="text-gray-200 mx-auto mb-3" />
-          <p className="text-gray-300 text-sm">Sin listas. Crea una con el botón +</p>
+        <div style={{
+          textAlign: 'center',
+          paddingTop: 64,
+          paddingBottom: 64,
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🛍️</div>
+          <p style={{ color: BURBUJAS.dark, opacity: 0.4, fontSize: 14 }}>Sin listas. Crea una con el botón +</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {lists.map(list => {
             const total = list.items?.length ?? 0
             const done = list.items?.filter(i => i.done).length ?? 0
@@ -196,20 +409,61 @@ export default function Shopping() {
               <button
                 key={list.id}
                 onClick={() => setActiveId(list.id)}
-                className="w-full flex items-center gap-4 bg-white rounded-2xl border border-gray-100 px-4 py-4 hover:border-gray-200 transition-colors text-left"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  background: '#fff',
+                  borderRadius: 20,
+                  border: `2.5px solid ${BURBUJAS.dark}`,
+                  padding: '12px 16px',
+                  boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `3px 5px 0 ${BURBUJAS.dark}`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = `3px 3px 0 ${BURBUJAS.dark}`;
+                }}
               >
-                <div className="bg-amber-50 rounded-xl p-2">
-                  <ShoppingBasket size={20} className="text-amber-500" />
+                <div style={{
+                  background: navColors.shop,
+                  borderRadius: 12,
+                  padding: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: `2px solid ${BURBUJAS.dark}`,
+                  color: '#fff',
+                }}>
+                  🛍️
                 </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900 text-sm">{list.name}</div>
-                  <div className="text-xs text-gray-400">{done}/{total} ítems</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, color: BURBUJAS.dark, fontSize: 14 }}>{list.name}</div>
+                  <div style={{ fontSize: 12, color: BURBUJAS.dark, opacity: 0.6 }}>{done}/{total} ítems</div>
                 </div>
                 {total > 0 && (
-                  <div className="w-14 bg-gray-100 rounded-full h-1.5">
+                  <div style={{
+                    width: 56,
+                    background: BURBUJAS.cream,
+                    borderRadius: 999,
+                    height: 6,
+                    border: `2px solid ${BURBUJAS.dark}`,
+                    overflow: 'hidden',
+                  }}>
                     <div
-                      className="bg-amber-400 h-1.5 rounded-full transition-all"
-                      style={{ width: `${(done / total) * 100}%` }}
+                      style={{
+                        background: navColors.shop,
+                        height: 6,
+                        transition: 'width 0.3s',
+                        width: `${(done / total) * 100}%`,
+                      }}
                     />
                   </div>
                 )}

@@ -1,56 +1,76 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { collection, query, where, onSnapshot } from '../lib/fsApi'
+import { useNavigate } from 'react-router-dom'
+import { collection, query, orderBy, onSnapshot, updateDoc, doc } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { ClipboardList, ShoppingCart, Wallet, Receipt, Refrigerator, ChevronRight, Copy, Check, AlertTriangle } from 'lucide-react'
+import { Copy, Check as CheckIcon } from 'lucide-react'
+import { BURBUJAS, burbFontFamily } from '../lib/burbujasTheme'
+import BurbCard from '../components/burbujas/BurbCard'
+import BurbPill from '../components/burbujas/BurbPill'
+import BurbCheckbox from '../components/burbujas/BurbCheckbox'
+import BurbAvatar from '../components/burbujas/BurbAvatar'
+import BurbProgressBar from '../components/burbujas/BurbProgressBar'
+
+const whoColor = w => w === 'yo' ? BURBUJAS.green : w === 'ella' ? BURBUJAS.pink : BURBUJAS.purple
+const whoEmoji = w => w === 'yo' ? '🐻' : w === 'ella' ? '🦊' : '💞'
+
+function Blob({ color, size, x, y }) {
+  return (
+    <div style={{
+      position: 'absolute', left: x, top: y, zIndex: 0,
+      width: size, height: size, borderRadius: '50%',
+      background: color, opacity: 0.32, filter: 'blur(30px)',
+      pointerEvents: 'none',
+    }} />
+  )
+}
 
 export default function Home() {
-  const { user, householdId } = useAuth()
-  const [pendingTasks, setPendingTasks] = useState(0)
-  const [shoppingItems, setShoppingItems] = useState(0)
-  const [fridgeUrgent, setFridgeUrgent] = useState(0)
+  const { householdId } = useAuth()
+  const nav = useNavigate()
+  const [tasks, setTasks] = useState([])
+  const [lists, setLists] = useState([])
+  const [expenses, setExpenses] = useState([])
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!householdId) return
-
-    const unsubTasks = onSnapshot(
-      query(collection(db, 'households', householdId, 'tasks'), where('done', '==', false)),
-      snap => setPendingTasks(snap.size)
+    const unsubT = onSnapshot(
+      query(collection(db, 'households', householdId, 'tasks'), orderBy('createdAt', 'desc')),
+      snap => setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     )
-
-    const unsubShopping = onSnapshot(
+    const unsubL = onSnapshot(
       collection(db, 'households', householdId, 'shoppingLists'),
-      snap => {
-        const total = snap.docs.reduce((acc, d) => {
-          const items = d.data().items || []
-          return acc + items.filter(i => !i.done).length
-        }, 0)
-        setShoppingItems(total)
-      }
+      snap => setLists(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     )
-
-    const unsubFridge = onSnapshot(
-      collection(db, 'households', householdId, 'fridge'),
-      snap => {
-        const today = new Date(); today.setHours(0, 0, 0, 0)
-        const urgent = snap.docs.filter(d => {
-          const exp = d.data().expiresAt
-          if (!exp) return false
-          const diff = Math.round((new Date(exp + 'T00:00:00') - today) / 86400000)
-          return diff <= 6
-        }).length
-        setFridgeUrgent(urgent)
-      }
+    const unsubE = onSnapshot(
+      collection(db, 'households', householdId, 'expenses'),
+      snap => setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     )
-
-    return () => { unsubTasks(); unsubShopping(); unsubFridge() }
+    return () => { unsubT(); unsubL(); unsubE() }
   }, [householdId])
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches'
-  const firstName = user?.displayName?.split(' ')[0] ?? ''
+  const pendingTasks = tasks.filter(t => !t.done)
+  const todayTasks = pendingTasks.slice(0, 3)
+  const pendingCount = pendingTasks.length
+
+  const activeList = lists[0]
+  const listItems = activeList?.items || []
+  const listDone = listItems.filter(i => i.done).length
+  const listTotal = listItems.length
+  const listPct = listTotal > 0 ? Math.round((listDone / listTotal) * 100) : 0
+
+  const totalYo = expenses.filter(e => e.paidBy === 'yo').reduce((s, e) => s + (e.amount || 0), 0)
+  const totalElla = expenses.filter(e => e.paidBy === 'ella').reduce((s, e) => s + (e.amount || 0), 0)
+  const balance = Math.abs((totalYo - totalElla) / 2)
+  const sheOwes = totalYo > totalElla
+  const balanceInt = Math.floor(balance)
+  const balanceCents = Math.round((balance - balanceInt) * 100).toString().padStart(2, '0')
+
+  const streak = 12
+
+  const toggleTask = task =>
+    updateDoc(doc(db, 'households', householdId, 'tasks', task.id), { done: !task.done })
 
   const copyCode = () => {
     navigator.clipboard.writeText(householdId)
@@ -59,67 +79,158 @@ export default function Home() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="pt-4 mb-6">
-        <p className="text-sm text-gray-400">{greeting}</p>
-        <h2 className="text-2xl font-bold text-gray-900">{firstName} 👋</h2>
+    <div style={{
+      padding: '16px 16px 24px',
+      maxWidth: 896,
+      margin: '0 auto',
+      fontFamily: burbFontFamily,
+      color: BURBUJAS.dark,
+      fontWeight: 700,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      <Blob color={BURBUJAS.pink} size={180} x={-60} y={60} />
+      <Blob color={BURBUJAS.blue} size={150} x={'60%'} y={260} />
+
+      {/* Header: greeting + avatares */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        position: 'relative', zIndex: 2, paddingTop: 8,
+      }}>
+        <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>
+          ¡Hola, mi amor!
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <BurbAvatar emoji="🦊" bg={BURBUJAS.pink} size={32} offset={2} />
+          <div style={{ marginLeft: -10, zIndex: 1 }}>
+            <BurbAvatar emoji="🐻" bg={BURBUJAS.green} size={32} offset={2} />
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-violet-50 rounded-2xl p-4">
-          <div className="text-3xl font-bold text-violet-600 mb-1">{pendingTasks}</div>
-          <div className="text-sm text-gray-500">Tareas pendientes</div>
+      {/* Racha del hogar */}
+      <BurbCard color={BURBUJAS.yellow} offset={3} style={{
+        marginTop: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+        position: 'relative', zIndex: 1,
+      }}>
+        <div style={{ fontSize: 26 }}>🔥</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.7, letterSpacing: 0.5 }}>RACHA DEL HOGAR</div>
+          <div style={{ fontSize: 18, fontWeight: 900 }}>{streak} días 💪</div>
         </div>
-        <div className="bg-amber-50 rounded-2xl p-4">
-          <div className="text-3xl font-bold text-amber-500 mb-1">{shoppingItems}</div>
-          <div className="text-sm text-gray-500">Items por comprar</div>
-        </div>
-      </div>
+        <BurbPill bg={BURBUJAS.dark}>¡sigan!</BurbPill>
+      </BurbCard>
 
-      <div className="space-y-2 mb-6">
-        {[
-          { to: '/tareas', icon: ClipboardList, label: 'Tareas', desc: 'Gestiona las tareas del hogar', iconClass: 'text-violet-600 bg-violet-50' },
-          { to: '/compras', icon: ShoppingCart, label: 'Compras', desc: 'Listas de compras compartidas', iconClass: 'text-amber-500 bg-amber-50' },
-          { to: '/refri', icon: Refrigerator, label: 'La refri', desc: 'Inventario y fechas de vencimiento', iconClass: 'text-cyan-500 bg-cyan-50', badge: fridgeUrgent },
-          { to: '/finanzas', icon: Wallet, label: 'Finanzas', desc: 'Gastos y balance familiar', iconClass: 'text-green-600 bg-green-50' },
-          { to: '/deudas', icon: Receipt, label: 'Deudas', desc: 'Préstamos y abonos pendientes', iconClass: 'text-orange-500 bg-orange-50' },
-        ].map(({ to, icon: Icon, label, desc, iconClass, badge }) => (
-          <Link
-            key={to}
-            to={to}
-            className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 px-4 py-3.5 hover:border-gray-200 transition-colors"
-          >
-            <div className={`p-2 rounded-xl ${iconClass}`}>
-              <Icon size={20} />
+      {/* Nos toca hoy */}
+      <BurbCard color="#fff" offset={4} style={{
+        marginTop: 10, padding: 12, position: 'relative', zIndex: 1,
+      }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: 8, gap: 8,
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 900, whiteSpace: 'nowrap' }}>Nos toca hoy</div>
+          <BurbPill bg={BURBUJAS.green}>{pendingCount}</BurbPill>
+        </div>
+        {todayTasks.length === 0 && (
+          <div style={{ padding: '8px 0', fontSize: 13, opacity: 0.5 }}>
+            ¡Todo listo por hoy! 🎉
+          </div>
+        )}
+        {todayTasks.map(t => {
+          const c = whoColor(t.assignee)
+          return (
+            <div key={t.id} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 0', borderTop: `1.5px solid ${BURBUJAS.line}`,
+            }}>
+              <BurbCheckbox checked={t.done} color={c} size={20} onChange={() => toggleTask(t)} />
+              <span style={{
+                flex: 1, fontSize: 13.5, fontWeight: 700,
+                textDecoration: t.done ? 'line-through' : 'none',
+                opacity: t.done ? 0.4 : 1,
+              }}>{t.title}</span>
+              <span style={{ fontSize: 14 }}>{whoEmoji(t.assignee)}</span>
             </div>
-            <div className="flex-1">
-              <div className="font-medium text-gray-900 text-sm">{label}</div>
-              <div className="text-xs text-gray-400">{desc}</div>
-            </div>
-            {badge > 0 && (
-              <span className="flex items-center gap-1 text-xs font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
-                <AlertTriangle size={11} />
-                {badge}
-              </span>
-            )}
-            <ChevronRight size={16} className="text-gray-300" />
-          </Link>
-        ))}
+          )
+        })}
+        <div
+          onClick={() => nav('/tareas')}
+          style={{ marginTop: 6, fontSize: 12, fontWeight: 800, color: BURBUJAS.purple, cursor: 'pointer' }}
+        >
+          ver todas →
+        </div>
+      </BurbCard>
+
+      {/* Duo: lista activa + te debe */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        marginTop: 10, position: 'relative', zIndex: 1,
+      }}>
+        <BurbCard
+          color={BURBUJAS.pink}
+          offset={3}
+          onClick={() => nav('/compras')}
+          style={{ padding: 12, color: '#fff' }}
+        >
+          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.9, letterSpacing: 0.5 }}>LISTA ACTIVA</div>
+          <div style={{ fontSize: 13, fontWeight: 900, marginTop: 2, lineHeight: 1.15 }}>
+            {activeList ? `${activeList.icon || '🛒'} ${activeList.name}` : '🛒 Sin lista'}
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 900, marginTop: 6 }}>{listPct}%</div>
+          <div style={{ marginTop: 5 }}>
+            <BurbProgressBar value={listDone} total={Math.max(listTotal, 1)} color="#fff" height={7} />
+          </div>
+        </BurbCard>
+        <BurbCard
+          color={BURBUJAS.purple}
+          offset={3}
+          onClick={() => nav('/finanzas')}
+          style={{ padding: 12, color: '#fff' }}
+        >
+          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.9, letterSpacing: 0.5 }}>
+            {sheOwes ? '🦊 TE DEBE' : '🐻 LE DEBES'}
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1, marginTop: 6 }}>
+            ${balanceInt}
+            <span style={{ fontSize: 13, opacity: 0.75 }}>.{balanceCents}</span>
+          </div>
+          <div style={{ fontSize: 10, fontWeight: 700, marginTop: 8, opacity: 0.9 }}>este mes</div>
+        </BurbCard>
       </div>
 
-      <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-        <p className="text-xs text-gray-400 mb-2">Código de tu hogar · Compártelo con tu pareja</p>
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-mono font-bold text-gray-700 tracking-widest">{householdId}</span>
-          <button
-            onClick={copyCode}
-            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors"
-          >
-            {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-            {copied ? 'Copiado' : 'Copiar'}
-          </button>
-        </div>
-      </div>
+      {/* Tu código */}
+      {householdId && (
+        <BurbCard color={BURBUJAS.yellowSoft} offset={3} style={{
+          marginTop: 12, padding: 12, position: 'relative', zIndex: 1,
+        }}>
+          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.6, letterSpacing: 0.5 }}>
+            TU CÓDIGO · COMPARTE CON TU PAREJA
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 6 }}>
+            <span style={{
+              fontSize: 15, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+              fontWeight: 900, letterSpacing: 2,
+            }}>{householdId}</span>
+            <button
+              onClick={copyCode}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, fontWeight: 800, color: BURBUJAS.dark,
+                background: '#fff',
+                border: `2px solid ${BURBUJAS.dark}`,
+                borderRadius: 12, padding: '5px 10px',
+                boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+                cursor: 'pointer',
+                fontFamily: burbFontFamily,
+              }}
+            >
+              {copied ? <CheckIcon size={14} color={BURBUJAS.green} /> : <Copy size={14} />}
+              {copied ? 'Copiado' : 'Copiar'}
+            </button>
+          </div>
+        </BurbCard>
+      )}
     </div>
   )
 }

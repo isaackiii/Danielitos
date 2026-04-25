@@ -1,11 +1,11 @@
 import { useSearchParams } from 'react-router-dom'
-import { Wallet, Receipt } from 'lucide-react'
+import { BURBUJAS, navColors } from '../lib/burbujasTheme'
 import Expenses from './Expenses'
 import Debts from './Debts'
 
 const TABS = [
-  { key: 'gastos', label: 'Gastos', icon: Wallet },
-  { key: 'deudas', label: 'Deudas', icon: Receipt },
+  { key: 'gastos', label: 'Gastos', emoji: '💸' },
+  { key: 'deudas', label: 'Deudas', emoji: '💝' },
 ]
 
 export default function Finance() {
@@ -22,19 +22,56 @@ export default function Finance() {
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="pt-4 mb-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-3">Finanzas</h2>
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-          {TABS.map(({ key, label, icon: Icon }) => (
+    <div style={{
+      padding: 16,
+      maxWidth: 896,
+      margin: '0 auto',
+      fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+    }}>
+      <div style={{ paddingTop: 16, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: BURBUJAS.dark, marginBottom: 12 }}>Finanzas</h2>
+        <div style={{
+          display: 'flex',
+          gap: 4,
+          background: BURBUJAS.cream,
+          borderRadius: 14,
+          padding: 4,
+          border: `2.5px solid ${BURBUJAS.dark}`,
+        }}>
+          {TABS.map(({ key, label, emoji }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === key ? 'bg-white text-violet-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                padding: '8px 12px',
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                background: tab === key ? (key === 'gastos' ? navColors.fin : BURBUJAS.pink) : 'transparent',
+                color: tab === key ? '#fff' : BURBUJAS.dark,
+                border: tab === key ? `2.5px solid ${BURBUJAS.dark}` : '2px solid transparent',
+                boxShadow: tab === key ? `2px 2px 0 ${BURBUJAS.dark}` : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              }}
+              onMouseEnter={e => {
+                if (tab !== key) {
+                  e.target.style.background = BURBUJAS.yellow;
+                }
+              }}
+              onMouseLeave={e => {
+                if (tab !== key) {
+                  e.target.style.background = 'transparent';
+                }
+              }}
             >
-              <Icon size={15} />
+              <span style={{ fontSize: 16 }}>{emoji}</span>
               {label}
             </button>
           ))}

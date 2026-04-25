@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { doc, setDoc, getDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { Home, Users } from 'lucide-react'
+import { BURBUJAS, burbFontFamily } from '../lib/burbujasTheme'
 
 const SAFE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 
@@ -73,81 +73,140 @@ export default function Setup() {
     }
   }
 
+  const optionCard = (color, emoji, title, desc, onClick) => (
+    <button onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+        padding: 14, borderRadius: 16,
+        background: '#fff',
+        border: `2.5px solid ${BURBUJAS.dark}`,
+        boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+        cursor: 'pointer', textAlign: 'left',
+        fontFamily: burbFontFamily,
+        transition: 'transform 0.2s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+      onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+      <div style={{
+        width: 44, height: 44, flexShrink: 0,
+        background: color, color: '#fff',
+        borderRadius: 12, fontSize: 22,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        border: `2px solid ${BURBUJAS.dark}`,
+      }}>
+        {emoji}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: BURBUJAS.dark }}>{title}</div>
+        <div style={{ fontSize: 11, opacity: 0.6, fontWeight: 600, marginTop: 2 }}>{desc}</div>
+      </div>
+    </button>
+  )
+
+  const primaryBtn = (label, onClick, disabled) => (
+    <button onClick={onClick} disabled={disabled}
+      style={{
+        width: '100%', padding: '12px 16px', borderRadius: 14, fontSize: 14,
+        background: BURBUJAS.purple, color: '#fff',
+        border: `2.5px solid ${BURBUJAS.dark}`,
+        boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        fontWeight: 800, fontFamily: burbFontFamily,
+        opacity: disabled ? 0.5 : 1,
+      }}>
+      {label}
+    </button>
+  )
+
+  const backBtn = (
+    <button onClick={() => setMode(null)}
+      style={{
+        width: '100%', padding: '8px 12px', fontSize: 13, fontWeight: 700,
+        background: 'transparent', color: BURBUJAS.dark, opacity: 0.6,
+        border: 'none', cursor: 'pointer', fontFamily: burbFontFamily,
+      }}>
+      ← Volver
+    </button>
+  )
+
   return (
-    <div className="min-h-screen bg-violet-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
-        <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">Configura tu hogar</h2>
-        <p className="text-gray-400 text-sm mb-6 text-center">¿Creas uno nuevo o te unes a un hogar existente?</p>
+    <div style={{
+      minHeight: '100vh',
+      background: BURBUJAS.bg,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+      fontFamily: burbFontFamily,
+      color: BURBUJAS.dark,
+    }}>
+      <div style={{
+        background: '#fff',
+        borderRadius: 24,
+        border: `2.5px solid ${BURBUJAS.dark}`,
+        boxShadow: `4px 4px 0 ${BURBUJAS.dark}`,
+        padding: 28,
+        width: '100%',
+        maxWidth: 380,
+      }}>
+        <h2 style={{
+          fontSize: 22, fontWeight: 900, textAlign: 'center', margin: 0, color: BURBUJAS.purple,
+        }}>
+          Configura tu hogar
+        </h2>
+        <p style={{ fontSize: 13, opacity: 0.6, textAlign: 'center', marginTop: 4, marginBottom: 22, fontWeight: 600 }}>
+          ¿Creas uno nuevo o te unes a uno existente?
+        </p>
 
         {!mode && (
-          <div className="space-y-3">
-            <button
-              onClick={() => setMode('create')}
-              className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-violet-300 hover:bg-violet-50 transition-colors text-left"
-            >
-              <div className="bg-violet-100 rounded-xl p-2">
-                <Home size={20} className="text-violet-600" />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900 text-sm">Crear nuevo hogar</div>
-                <div className="text-xs text-gray-400">Generarás un código para invitar a tu pareja</div>
-              </div>
-            </button>
-            <button
-              onClick={() => setMode('join')}
-              className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-gray-100 hover:border-gray-300 hover:bg-gray-50 transition-colors text-left"
-            >
-              <div className="bg-gray-100 rounded-xl p-2">
-                <Users size={20} className="text-gray-600" />
-              </div>
-              <div>
-                <div className="font-medium text-gray-900 text-sm">Unirme a un hogar</div>
-                <div className="text-xs text-gray-400">Tengo el código de mi pareja</div>
-              </div>
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {optionCard(BURBUJAS.purple, '🏡', 'Crear nuevo hogar', 'Generarás un código para invitar a tu pareja', () => setMode('create'))}
+            {optionCard(BURBUJAS.pink, '💞', 'Unirme a un hogar', 'Tengo el código de mi pareja', () => setMode('join'))}
           </div>
         )}
 
         {mode === 'create' && (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontSize: 13, opacity: 0.7, fontWeight: 600 }}>
               Se creará un hogar y podrás compartir el código de 6 letras con tu pareja para que se una.
             </p>
-            {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl">{error}</div>}
-            <button
-              onClick={handleCreate}
-              disabled={busy}
-              className="w-full bg-violet-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-violet-700 disabled:opacity-50 transition-colors"
-            >
-              {busy ? 'Creando...' : 'Crear hogar'}
-            </button>
-            <button onClick={() => setMode(null)} className="w-full text-sm text-gray-400 hover:text-gray-600 py-2">
-              Volver
-            </button>
+            {error && (
+              <div style={{
+                background: BURBUJAS.pinkSoft, color: BURBUJAS.dark, fontWeight: 700, fontSize: 13,
+                padding: 12, borderRadius: 12, border: `2px solid ${BURBUJAS.dark}`,
+              }}>{error}</div>
+            )}
+            {primaryBtn(busy ? 'Creando...' : 'Crear hogar', handleCreate, busy)}
+            {backBtn}
           </div>
         )}
 
         {mode === 'join' && (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-500">Ingresa el código de tu hogar:</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ fontSize: 13, opacity: 0.7, fontWeight: 600 }}>Ingresa el código de tu hogar:</p>
             <input
               value={code}
               onChange={e => setCode(e.target.value.toUpperCase())}
               placeholder="XXXXXX"
               maxLength={6}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-violet-400"
+              style={{
+                width: '100%', padding: '14px 16px',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                borderRadius: 14,
+                textAlign: 'center', fontSize: 26, fontWeight: 900,
+                letterSpacing: 8, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                color: BURBUJAS.dark, outline: 'none', background: BURBUJAS.cream,
+                boxSizing: 'border-box',
+              }}
             />
-            {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl">{error}</div>}
-            <button
-              onClick={handleJoin}
-              disabled={busy || code.length < 4}
-              className="w-full bg-violet-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-violet-700 disabled:opacity-50 transition-colors"
-            >
-              {busy ? 'Uniéndome...' : 'Unirme'}
-            </button>
-            <button onClick={() => setMode(null)} className="w-full text-sm text-gray-400 hover:text-gray-600 py-2">
-              Volver
-            </button>
+            {error && (
+              <div style={{
+                background: BURBUJAS.pinkSoft, color: BURBUJAS.dark, fontWeight: 700, fontSize: 13,
+                padding: 12, borderRadius: 12, border: `2px solid ${BURBUJAS.dark}`,
+              }}>{error}</div>
+            )}
+            {primaryBtn(busy ? 'Uniéndome...' : 'Unirme', handleJoin, busy || code.length < 4)}
+            {backBtn}
           </div>
         )}
       </div>

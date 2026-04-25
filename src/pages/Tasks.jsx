@@ -5,16 +5,17 @@ import {
 } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { Plus, Check, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
+import { BURBUJAS, navColors } from '../lib/burbujasTheme'
+import BurbCheckbox from '../components/burbujas/BurbCheckbox'
 
 const ASSIGNEES = [
-  { value: 'yo', label: 'Yo', color: 'bg-blue-100 text-blue-700' },
-  { value: 'ella', label: 'Ella', color: 'bg-pink-100 text-pink-700' },
-  { value: 'ambos', label: 'Ambos', color: 'bg-violet-100 text-violet-700' },
+  { value: 'yo', label: 'Yo', emoji: '🐻', color: BURBUJAS.blue },
+  { value: 'ella', label: 'Ella', emoji: '🦊', color: BURBUJAS.pink },
+  { value: 'ambos', label: 'Ambos', emoji: '💞', color: BURBUJAS.purple },
 ]
 
-const assigneeColor = v => ASSIGNEES.find(a => a.value === v)?.color ?? 'bg-gray-100 text-gray-500'
-const assigneeLabel = v => ASSIGNEES.find(a => a.value === v)?.label ?? v
+const getAssignee = v => ASSIGNEES.find(a => a.value === v) || ASSIGNEES[2]
 
 export default function Tasks() {
   const { householdId } = useAuth()
@@ -63,52 +64,141 @@ export default function Tasks() {
     deleteDoc(doc(db, 'households', householdId, 'tasks', id))
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between pt-4 mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Tareas</h2>
+    <div style={{
+      padding: 16,
+      maxWidth: 896,
+      margin: '0 auto',
+      fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: BURBUJAS.dark }}>Tareas</h2>
         <button
           onClick={() => setShowForm(v => !v)}
-          className="bg-violet-600 text-white rounded-full p-2 hover:bg-violet-700 transition-colors"
+          style={{
+            background: navColors.task,
+            color: '#fff',
+            borderRadius: '50%',
+            padding: 8,
+            border: `2.5px solid ${BURBUJAS.dark}`,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 40,
+            height: 40,
+            boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
+            transition: 'transform 0.2s',
+            fontWeight: 800,
+          }}
+          onMouseEnter={e => e.target.style.transform = 'scale(1.1)'}
+          onMouseLeave={e => e.target.style.transform = 'scale(1)'}
         >
           <Plus size={20} />
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 space-y-3">
+        <form onSubmit={handleAdd} style={{
+          background: '#fff',
+          borderRadius: 20,
+          border: `2.5px solid ${BURBUJAS.dark}`,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}>
           <input
             autoFocus
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="¿Qué hay que hacer?"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+            style={{
+              width: '100%',
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontSize: 14,
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              outline: 'none',
+            }}
           />
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             {ASSIGNEES.map(a => (
               <button
                 key={a.value}
                 type="button"
                 onClick={() => setAssignee(a.value)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  assignee === a.value ? a.color : 'bg-gray-100 text-gray-400'
-                }`}
+                style={{
+                  flex: 1,
+                  padding: '6px 12px',
+                  borderRadius: 12,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  border: `2.5px solid ${BURBUJAS.dark}`,
+                  background: assignee === a.value ? a.color : '#fff',
+                  color: assignee === a.value ? '#fff' : BURBUJAS.dark,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                }}
+                onMouseEnter={e => {
+                  if (assignee !== a.value) {
+                    e.target.style.background = a.color;
+                    e.target.style.color = '#fff';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (assignee !== a.value) {
+                    e.target.style.background = '#fff';
+                    e.target.style.color = BURBUJAS.dark;
+                  }
+                }}
               >
-                {a.label}
+                {a.emoji} {a.label}
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="flex-1 py-2 rounded-xl text-sm text-gray-500 border border-gray-200 hover:bg-gray-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                color: BURBUJAS.dark,
+                background: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+              onMouseLeave={e => e.target.style.background = '#fff'}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!title.trim() || adding}
-              className="flex-1 py-2 rounded-xl text-sm bg-violet-600 text-white font-medium hover:bg-violet-700 disabled:opacity-50"
+              style={{
+                flex: 1,
+                padding: '8px 16px',
+                borderRadius: 12,
+                fontSize: 14,
+                background: navColors.task,
+                color: '#fff',
+                border: `2.5px solid ${BURBUJAS.dark}`,
+                cursor: !title.trim() || adding ? 'not-allowed' : 'pointer',
+                fontWeight: 700,
+                fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                opacity: !title.trim() || adding ? 0.5 : 1,
+              }}
             >
               Agregar
             </button>
@@ -116,14 +206,35 @@ export default function Tasks() {
         </form>
       )}
 
-      <div className="flex gap-2 mb-4">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {[['pending', 'Pendientes'], ['done', 'Hechas'], ['all', 'Todas']].map(([val, label]) => (
           <button
             key={val}
             onClick={() => setFilter(val)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              filter === val ? 'bg-violet-600 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'
-            }`}
+            style={{
+              padding: '6px 12px',
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 800,
+              background: filter === val ? navColors.task : '#fff',
+              color: filter === val ? '#fff' : BURBUJAS.dark,
+              border: `2.5px solid ${BURBUJAS.dark}`,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+            }}
+            onMouseEnter={e => {
+              if (filter !== val) {
+                e.target.style.background = navColors.task;
+                e.target.style.color = '#fff';
+              }
+            }}
+            onMouseLeave={e => {
+              if (filter !== val) {
+                e.target.style.background = '#fff';
+                e.target.style.color = BURBUJAS.dark;
+              }
+            }}
           >
             {label}
           </button>
@@ -131,40 +242,91 @@ export default function Tasks() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-300 text-sm">
+        <div style={{
+          textAlign: 'center',
+          paddingTop: 64,
+          paddingBottom: 64,
+          color: BURBUJAS.dark,
+          opacity: 0.4,
+          fontSize: 14,
+        }}>
           {filter === 'pending' ? '¡Sin tareas pendientes! 🎉' : 'No hay tareas aquí.'}
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map(task => (
-            <div
-              key={task.id}
-              className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 px-4 py-3"
-            >
-              <button
-                onClick={() => toggleDone(task)}
-                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                  task.done
-                    ? 'bg-green-500 border-green-500 text-white'
-                    : 'border-gray-300 hover:border-violet-400'
-                }`}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {filtered.map(task => {
+            const assigneeData = getAssignee(task.assignee)
+            return (
+              <div
+                key={task.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  background: '#fff',
+                  borderRadius: 20,
+                  border: `2.5px solid ${BURBUJAS.dark}`,
+                  padding: '12px 16px',
+                  boxShadow: `3px 3px 0 ${BURBUJAS.dark}`,
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = `3px 5px 0 ${BURBUJAS.dark}`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = `3px 3px 0 ${BURBUJAS.dark}`;
+                }}
               >
-                {task.done && <Check size={12} strokeWidth={3} />}
-              </button>
-              <span className={`flex-1 text-sm ${task.done ? 'line-through text-gray-300' : 'text-gray-800'}`}>
-                {task.title}
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${assigneeColor(task.assignee)}`}>
-                {assigneeLabel(task.assignee)}
-              </span>
-              <button
-                onClick={() => handleDelete(task.id)}
-                className="text-gray-200 hover:text-red-400 transition-colors"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
+                <BurbCheckbox
+                  checked={task.done}
+                  color={assigneeData.color}
+                  onChange={() => toggleDone(task)}
+                />
+                <span style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: BURBUJAS.dark,
+                  textDecoration: task.done ? 'line-through' : 'none',
+                  opacity: task.done ? 0.5 : 1,
+                  fontWeight: task.done ? 400 : 500,
+                }}>
+                  {task.title}
+                </span>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '4px 8px',
+                  borderRadius: 999,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  background: assigneeData.color,
+                  color: '#fff',
+                  border: `2px solid ${BURBUJAS.dark}`,
+                }}>
+                  {assigneeData.emoji} {assigneeData.label}
+                </div>
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: BURBUJAS.dark,
+                    cursor: 'pointer',
+                    padding: 4,
+                    opacity: 0.3,
+                    transition: 'opacity 0.2s',
+                  }}
+                  onMouseEnter={e => e.target.style.opacity = 1}
+                  onMouseLeave={e => e.target.style.opacity = 0.3}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
