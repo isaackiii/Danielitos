@@ -29,7 +29,7 @@ export default function Home() {
   const nav = useNavigate()
   const [tasks, setTasks] = useState([])
   const [lists, setLists] = useState([])
-  const [expenses, setExpenses] = useState([])
+  const [deudas, setDeudas] = useState([])
 
   useEffect(() => {
     if (!householdId) return
@@ -41,11 +41,11 @@ export default function Home() {
       collection(db, 'households', householdId, 'shoppingLists'),
       snap => setLists(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     )
-    const unsubE = onSnapshot(
-      collection(db, 'households', householdId, 'expenses'),
-      snap => setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    const unsubD = onSnapshot(
+      collection(db, 'households', householdId, 'deudas'),
+      snap => setDeudas(snap.docs.map(d => ({ id: d.id, ...d.data() })))
     )
-    return () => { unsubT(); unsubL(); unsubE() }
+    return () => { unsubT(); unsubL(); unsubD() }
   }, [householdId])
 
   const pendingTasks = tasks.filter(t => !t.done)
@@ -58,12 +58,16 @@ export default function Home() {
   const listTotal = listItems.length
   const listPct = listTotal > 0 ? Math.round((listDone / listTotal) * 100) : 0
 
-  const totalYo = expenses.filter(e => e.paidBy === 'yo').reduce((s, e) => s + (e.amount || 0), 0)
-  const totalElla = expenses.filter(e => e.paidBy === 'ella').reduce((s, e) => s + (e.amount || 0), 0)
-  const balance = Math.abs((totalYo - totalElla) / 2)
-  const sheOwes = totalYo > totalElla
-  const balanceInt = Math.floor(balance)
-  const balanceCents = Math.round((balance - balanceInt) * 100).toString().padStart(2, '0')
+  const saldoPendiente = d => {
+    const abonado = (d.abonos ?? []).reduce((s, a) => s + a.amount, 0)
+    return Math.max(0, d.amount - abonado)
+  }
+  const totalDebemos = deudas
+    .filter(d => d.type === 'debemos' && !d.paid)
+    .reduce((s, d) => s + saldoPendiente(d), 0)
+  const deudaCount = deudas.filter(d => d.type === 'debemos' && !d.paid).length
+  const deudaInt = Math.floor(totalDebemos)
+  const deudaCents = Math.round((totalDebemos - deudaInt) * 100).toString().padStart(2, '0')
 
   const streak = 12
 
@@ -175,19 +179,19 @@ export default function Home() {
           </div>
         </BurbCard>
         <BurbCard
-          color={BURBUJAS.purple}
+          color={BURBUJAS.orange}
           offset={3}
           onClick={() => nav('/finanzas')}
           style={{ padding: 12, color: '#fff' }}
         >
-          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.9, letterSpacing: 0.5 }}>
-            {sheOwes ? '🦊 TE DEBE' : '🐻 LE DEBES'}
-          </div>
+          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.9, letterSpacing: 0.5 }}>💸 DEBEMOS</div>
           <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1, marginTop: 6 }}>
-            ${balanceInt}
-            <span style={{ fontSize: 13, opacity: 0.75 }}>.{balanceCents}</span>
+            ${deudaInt}
+            <span style={{ fontSize: 13, opacity: 0.75 }}>.{deudaCents}</span>
           </div>
-          <div style={{ fontSize: 10, fontWeight: 700, marginTop: 8, opacity: 0.9 }}>este mes</div>
+          <div style={{ fontSize: 10, fontWeight: 700, marginTop: 8, opacity: 0.9 }}>
+            {deudaCount === 0 ? '¡sin deudas! 🎉' : `${deudaCount} deuda${deudaCount > 1 ? 's' : ''} pendiente${deudaCount > 1 ? 's' : ''}`}
+          </div>
         </BurbCard>
       </div>
 
