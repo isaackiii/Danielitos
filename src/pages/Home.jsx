@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { collection, query, orderBy, onSnapshot, updateDoc, doc } from '../lib/fsApi'
 import { db } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
-import { Copy, Check as CheckIcon } from 'lucide-react'
 import { BURBUJAS, burbFontFamily } from '../lib/burbujasTheme'
 import BurbCard from '../components/burbujas/BurbCard'
 import BurbPill from '../components/burbujas/BurbPill'
@@ -31,7 +30,6 @@ export default function Home() {
   const [tasks, setTasks] = useState([])
   const [lists, setLists] = useState([])
   const [expenses, setExpenses] = useState([])
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!householdId) return
@@ -71,12 +69,6 @@ export default function Home() {
 
   const toggleTask = task =>
     updateDoc(doc(db, 'households', householdId, 'tasks', task.id), { done: !task.done })
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(householdId)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
 
   return (
     <div style={{
@@ -199,38 +191,6 @@ export default function Home() {
         </BurbCard>
       </div>
 
-      {/* Tu código */}
-      {householdId && (
-        <BurbCard color={BURBUJAS.yellowSoft} offset={3} style={{
-          marginTop: 12, padding: 12, position: 'relative', zIndex: 1,
-        }}>
-          <div style={{ fontSize: 10, fontWeight: 800, opacity: 0.6, letterSpacing: 0.5 }}>
-            TU CÓDIGO · COMPARTE CON TU PAREJA
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 6 }}>
-            <span style={{
-              fontSize: 15, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              fontWeight: 900, letterSpacing: 2,
-            }}>{householdId}</span>
-            <button
-              onClick={copyCode}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 12, fontWeight: 800, color: BURBUJAS.dark,
-                background: '#fff',
-                border: `2px solid ${BURBUJAS.dark}`,
-                borderRadius: 12, padding: '5px 10px',
-                boxShadow: `2px 2px 0 ${BURBUJAS.dark}`,
-                cursor: 'pointer',
-                fontFamily: burbFontFamily,
-              }}
-            >
-              {copied ? <CheckIcon size={14} color={BURBUJAS.green} /> : <Copy size={14} />}
-              {copied ? 'Copiado' : 'Copiar'}
-            </button>
-          </div>
-        </BurbCard>
-      )}
     </div>
   )
 }

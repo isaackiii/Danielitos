@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, ClipboardList, ShoppingCart, Wallet, Refrigerator, LogOut, Download } from 'lucide-react'
+import { Home, ClipboardList, ShoppingCart, Wallet, Refrigerator, LogOut, Download, Settings } from 'lucide-react'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { useAuth } from '../contexts/AuthContext'
@@ -116,6 +116,29 @@ export default function Layout() {
             )}
             <span style={{ fontSize: 12, color: BURBUJAS.dark, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.displayName}</span>
           </div>
+          <button
+            onClick={() => navigate('/ajustes')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '8px 12px',
+              borderRadius: 14,
+              fontSize: 14,
+              color: BURBUJAS.dark,
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+              fontWeight: 600,
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+            onMouseLeave={e => e.target.style.background = 'transparent'}
+          >
+            <Settings size={16} />
+            Ajustes
+          </button>
           <button
             onClick={handleSignOut}
             style={{
@@ -243,6 +266,30 @@ export default function Layout() {
                   Descargar app
                 </button>
               )}
+              <button
+                onClick={() => { setMenuOpen(false); navigate('/ajustes') }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 16px',
+                  fontSize: 14,
+                  color: BURBUJAS.dark,
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: `2.5px solid ${BURBUJAS.dark}`,
+                  width: '100%',
+                  cursor: 'pointer',
+                  fontFamily: '"Nunito", "Quicksand", system-ui, sans-serif',
+                  fontWeight: 600,
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.target.style.background = BURBUJAS.yellow}
+                onMouseLeave={e => e.target.style.background = 'transparent'}
+              >
+                <Settings size={16} />
+                Ajustes
+              </button>
               <button
                 onClick={() => { setMenuOpen(false); handleSignOut() }}
                 style={{

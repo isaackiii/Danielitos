@@ -36,6 +36,7 @@ export const navColors = {
   shop: BURBUJAS.pink,
   fin: BURBUJAS.purple,
   refri: BURBUJAS.blue,
+  settings: BURBUJAS.yellow,
 }
 
 export const colorMap = {
